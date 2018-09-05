@@ -1,4 +1,4 @@
-class _BadAlgebraOperationException(Exception):
+class _InvalidAlgebraOperationException(Exception):
     def __init__(self, message):
         super().__init__(message)
 
@@ -8,13 +8,19 @@ class _BadAlgebraNumberTypeException(Exception):
         super().__init__(message)
 
 
-class _BadAlgebraNumberValueException(Exception):
+class _InvalidAlgebraNumberValueException(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
+class _InvalidOperationArgumentsException:
     def __init__(self, message):
         super().__init__(message)
 
 
 __all__ = [
-    "_BadAlgebraOperationException",
+    "_InvalidAlgebraOperationException",
     "_BadAlgebraNumberTypeException",
-    "_BadAlgebraNumberValueException"
+    "_InvalidAlgebraNumberValueException",
+    "_InvalidOperationArgumentsException"
 ]
