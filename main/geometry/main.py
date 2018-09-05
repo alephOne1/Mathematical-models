@@ -3,17 +3,17 @@ sys.path.append("..")
 
 try:
     from exceptions.geometry import *
-except (ModuleNotFoundError) as error:
+except ModuleNotFoundError as error:
     raise error
 
 class _GeometryObject:
-    TYPES = []
+    OBJECT_TYPES = []
 
     def __init__(self, object_type, n_dimensions=2, *args, **kwargs):
-        self.type = object_type
+        self._object_type = object_type
 
-        if self.type not in self.TYPES:
-            __class__.TYPES.append(self.type)
+        if self._object_type not in __class__.OBJECT_TYPES:
+            __class__.OBJECT_TYPES.append(self._object_type)
 
     def __len__(self) -> int:
         return self._n_dims
@@ -33,7 +33,7 @@ class GeometrySpace(_GeometryObject):
             )
 
         super().__init__(
-            self.__class__,
+            __class__,
             self._n_dims
         )
 
@@ -103,7 +103,7 @@ class GeometryPoint(_GeometryObject):
             )
 
         super().__init__(
-            self.__class__,
+            __class__,
             self._n_dims
         )
 
@@ -129,7 +129,9 @@ class GeometryPoint(_GeometryObject):
     def distance(self, *args) -> list:
         if args:
             if set(map(type, args)) != {GeometryPoint}:
-                raise _NotPointsException("Distance can be computed only between points.")
+                raise _NotPointsException(
+                    "Distance can be computed only between points."
+                )
             else:
                 distances = []
 
