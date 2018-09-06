@@ -31,16 +31,16 @@ class AlgebraNumber(_AlgebraObject):
 
         self.validate_number_value(value, self.type)
 
-        self.value = value
+        self._value = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Algebraic {self.type} Number at {hex(id(self))}>"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.__repr__()
 
     def __call__(self):
-        return self.value
+        return self._value
 
     @staticmethod
     def validate_number_value(value, value_type):
@@ -76,13 +76,13 @@ class AlgebraOperation(_AlgebraObject):
 
         super().__init__(__class__)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Algebraic {self.type} Operation at {hex(id(self))}>"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.__repr__()
 
-    def __call__(self, *args):
+    def __call__(self, *args) -> AlgebraNumber:
         return getattr(self, self.type)(*args)
 
     def change_type(self, new_type="add"):
@@ -93,14 +93,14 @@ class AlgebraOperation(_AlgebraObject):
                 "There is no such available algebraic operation."
             )
 
-    def add(self, *args):
+    def add(self, *args) -> AlgebraNumber:
         if set(map(type, args)) != {AlgebraNumber}:
             raise _InvalidOperationArgumentsException(
                 "Algebra operation arguments must be elements of numeric type."
             )
         else:
             result_value = 0
-            result_type = "natural"
+            result_type = "integer"
 
             available_numeric_types = AlgebraNumber.NUMERIC_TYPES
 
@@ -111,7 +111,7 @@ class AlgebraOperation(_AlgebraObject):
 
             return AlgebraNumber(result_value, result_type)
 
-    def subtract(self, *args):
+    def subtract(self, *args) -> AlgebraNumber:
         if set(map(type, args)) != {AlgebraNumber}:
             raise _InvalidOperationArgumentsException(
                 "Algebra operation arguments must be elements of numeric type."
@@ -129,7 +129,7 @@ class AlgebraOperation(_AlgebraObject):
 
             return AlgebraNumber(result_value, result_type)
 
-    def multiply(self, *args):
+    def multiply(self, *args) -> AlgebraNumber:
         if set(map(type, args)) != {AlgebraNumber}:
             raise _InvalidOperationArgumentsException(
                 "Algebra operation arguments must be elements of numeric type."
@@ -147,7 +147,7 @@ class AlgebraOperation(_AlgebraObject):
 
             return AlgebraNumber(result_value, result_type)
 
-    def divide(self, *args):
+    def divide(self, *args) -> AlgebraNumber:
         if set(map(type, args)) != {AlgebraNumber}:
             raise _InvalidOperationArgumentsException(
                 "Algebra operation arguments must be elements of numeric type."
@@ -167,18 +167,63 @@ class AlgebraOperation(_AlgebraObject):
                 else:
                     result_value /= number()
 
-            if result_value == int(result_value):
-                return AlgebraNumber(int(result_value), result_type)
+            if result_value % 1 == 0:
+                return AlgebraNumber(int(result_value), "integer")
             else:
                 return AlgebraNumber(result_value, "real")
+
+
+class AlgebraPolynomial(_AlgebraObject):
+    def __init__(self, coefficients=(0), *args):
+        if not coefficients or type(coefficients) != tuple or not set(map(type, coefficients)) <= {int, float, bool}:
+            raise _InvalidPolynomialCoefficientsException(
+                "Polynomial coefficients argument must be non empty tuple with numeric elements."
+            )
+        else:
+            self._coefficients = coefficients
+
+        super().__init__(__class__)
+
+    def __len__(self):
+        return len(self._coefficients)
+
+    def __repr__(self):
+        return f"<Algebraic Polynomial of degree {len(self) - 1} at {hex(id(self))}>"
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __call__(self, argument):
+        if type(argument) != AlgebraNumber:
+            raise _InvalidPolynomialCallArgument(
+                "Polynomial call arguement must be an algebraic number."
+            )
+        else:
+            result_value = 0
+
+            for coefficient, power in zip(self._coefficients, sorted(range(len(self)), reverse=True)):
+                if power == 0:
+                    result_value += coefficient
+                else:
+                    result_value += coefficient * pow(argument(), power)
+
+            if result_value % 1 == 0:
+                return AlgebraNumber(int(result_value), "integer")
+            else:
+                return AlgebraNumber(result_value, "real")
+
 
 
 if __name__ == "__main__":
     number_first_example = AlgebraNumber(12312, "natural")
     number_second_example = AlgebraNumber(-1232214, "integer")
 
-    operation_example = AlgebraOperation("divide")
+    squared_polynomial_example = AlgebraPolynomial((1, 2, 3, 4)) # 1*(x^3) + 2*(x^2) + 3*(x) + 4
 
-    result = operation_example(number_first_example, number_second_example)
+    polynomial_call_result = squared_polynomial_example(number_first_example)
 
-    print(result())
+    print(
+        squared_polynomial_example,
+        polynomial_call_result(),
+        sep="\n"
+    )
